@@ -2,6 +2,14 @@
 
 Candidate Flow is a hiring pipeline dashboard built for backend-focused portfolio presentation. The project combines a Spring Boot API with a React dashboard and demonstrates layered backend design, relational modeling, validation, CRUD operations, and live pipeline tracking.
 
+## Project Description
+
+Candidate Flow is a recruitment pipeline management application developed to streamline candidate tracking, job posting management, and hiring stage progression. The backend is built with Spring Boot using layered architecture, DTO-based request and response handling, validation, and JPA/Hibernate for data persistence. The frontend is a React dashboard that presents hiring metrics, candidate data, open roles, and live application status updates in a responsive interface.
+
+## GitHub Short Description
+
+Backend-first hiring pipeline dashboard built with Spring Boot, React, JPA, and H2 in MSSQL mode.
+
 ## Stack
 
 - Backend: Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security, Validation
@@ -25,14 +33,22 @@ Candidate Flow is a hiring pipeline dashboard built for backend-focused portfoli
 
 ## Run Locally
 
-1. Start the backend:
+### Requirements
+
+- Java 21 or newer
+- Node.js 20+
+- npm
+
+### 1. Start the backend
 
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-2. In a second terminal, start the frontend:
+The backend starts on `http://localhost:8080`
+
+### 2. Start the frontend in a second terminal
 
 ```powershell
 cd frontend
@@ -40,9 +56,13 @@ npm install
 npm run dev
 ```
 
-3. Open `http://localhost:5173`
+The frontend starts on `http://localhost:5173`
 
-The frontend talks to `http://localhost:8080` by default. If you want to change that, set `VITE_API_BASE_URL` before running the frontend.
+### 3. Open the application
+
+- Open `http://localhost:5173`
+- The frontend talks to `http://localhost:8080` by default
+- If you want to change the backend URL, set `VITE_API_BASE_URL` before running the frontend
 
 ## Useful Endpoints
 
