@@ -105,6 +105,11 @@ function App() {
     }
   }, [])
 
+  function publishMessage(type, text) {
+    setMessage({ type, text })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   async function handleCandidateSubmit(event) {
     event.preventDefault()
     setIsSubmitting(true)
@@ -120,7 +125,7 @@ function App() {
       })
 
       setCandidateForm(initialCandidateForm)
-      setMessage({ type: 'success', text: 'Candidate added to the pipeline.' })
+      publishMessage('success', 'Candidate added to the pipeline.')
       await refreshData({
         setDashboard,
         setCandidates,
@@ -130,7 +135,7 @@ function App() {
         setMessage,
       })
     } catch (error) {
-      setMessage({ type: 'error', text: error.message })
+      publishMessage('error', error.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -151,7 +156,7 @@ function App() {
       })
 
       setJobForm(initialJobForm)
-      setMessage({ type: 'success', text: 'Role created successfully.' })
+      publishMessage('success', 'Role created successfully.')
       await refreshData({
         setDashboard,
         setCandidates,
@@ -161,7 +166,7 @@ function App() {
         setMessage,
       })
     } catch (error) {
-      setMessage({ type: 'error', text: error.message })
+      publishMessage('error', error.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -183,7 +188,7 @@ function App() {
       })
 
       setApplicationForm(initialApplicationForm)
-      setMessage({ type: 'success', text: 'Application added to live pipeline.' })
+      publishMessage('success', 'Application added to live pipeline.')
       await refreshData({
         setDashboard,
         setCandidates,
@@ -193,7 +198,7 @@ function App() {
         setMessage,
       })
     } catch (error) {
-      setMessage({ type: 'error', text: error.message })
+      publishMessage('error', error.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -206,7 +211,7 @@ function App() {
         body: JSON.stringify({ status: nextStatus }),
       })
 
-      setMessage({ type: 'success', text: 'Application stage updated.' })
+      publishMessage('success', 'Application stage updated.')
       await refreshData({
         setDashboard,
         setCandidates,
@@ -216,7 +221,7 @@ function App() {
         setMessage,
       })
     } catch (error) {
-      setMessage({ type: 'error', text: error.message })
+      publishMessage('error', error.message)
     }
   }
 
@@ -513,7 +518,7 @@ function App() {
                 />
               </label>
               <button className="primary-button" disabled={isSubmitting} type="submit">
-                Save candidate
+                {isSubmitting ? 'Saving...' : 'Save candidate'}
               </button>
             </form>
           </section>
@@ -619,7 +624,7 @@ function App() {
                 Keep role open
               </label>
               <button className="primary-button" disabled={isSubmitting} type="submit">
-                Save role
+                {isSubmitting ? 'Saving...' : 'Save role'}
               </button>
             </form>
           </section>
@@ -713,7 +718,7 @@ function App() {
                 />
               </label>
               <button className="primary-button" disabled={isSubmitting} type="submit">
-                Save application
+                {isSubmitting ? 'Saving...' : 'Save application'}
               </button>
             </form>
           </section>
