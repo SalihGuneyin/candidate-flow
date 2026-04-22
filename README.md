@@ -64,6 +64,20 @@ The frontend starts on `http://localhost:5173`
 - The frontend talks to `http://localhost:8080` by default
 - If you want to change the backend URL, set `VITE_API_BASE_URL` before running the frontend
 
+### Easier option
+
+From the project root, you can start both services with one command:
+
+```powershell
+.\start-local.ps1
+```
+
+To stop background processes started for this project:
+
+```powershell
+.\stop-local.ps1
+```
+
 ## Useful Endpoints
 
 - `GET /api/dashboard`
