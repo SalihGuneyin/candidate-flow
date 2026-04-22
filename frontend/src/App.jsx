@@ -52,6 +52,10 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState({ type: 'idle', text: '' })
   const deferredSearch = useDeferredValue(searchTerm)
+  const openRoles = jobs.filter((job) => job.active).length
+  const activePipelineCount = applications.filter(
+    (application) => application.status !== 'HIRED' && application.status !== 'REJECTED',
+  ).length
 
   const query = deferredSearch.trim().toLowerCase()
   const filteredApplications = applications.filter((application) => {
@@ -217,29 +221,29 @@ function App() {
   }
 
   return (
-    <div className="shell">
-      <header className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Candidate Flow</p>
-          <h1>Backend-first hiring dashboard for fast-moving recruitment teams.</h1>
-          <p className="lede">
-            Spring Boot API, relational data model, validation-driven forms and a responsive
-            React control room in one portfolio project.
+    <div className="app-shell">
+      <header className="topbar panel">
+        <div className="topbar-copy">
+          <p className="kicker">Candidate Flow</p>
+          <h1>Recruiting operations dashboard</h1>
+          <p className="topbar-text">
+            A compact internal tool for tracking candidates, role openings and movement across
+            the hiring funnel.
           </p>
-          <div className="hero-actions">
-            <span className="badge">Spring Boot</span>
-            <span className="badge">React</span>
-            <span className="badge">H2 in MSSQL mode</span>
-          </div>
         </div>
-        <div className="hero-panel">
-          <p className="panel-title">What this demo shows</p>
-          <ul className="feature-list">
-            <li>Candidate onboarding with DTO-based API contracts</li>
-            <li>Role management and salary band tracking</li>
-            <li>Application pipeline with status transitions</li>
-            <li>Dashboard metrics seeded with realistic sample data</li>
-          </ul>
+        <div className="topbar-side">
+          <article className="status-note">
+            <span className="note-label">System</span>
+            <strong>{isLoading ? 'Syncing local API' : 'Connected to local API'}</strong>
+            <p>Spring Boot on 8080 and Vite on 5173.</p>
+          </article>
+          <article className="status-note">
+            <span className="note-label">Snapshot</span>
+            <strong>
+              {candidates.length} candidates, {openRoles} open roles
+            </strong>
+            <p>{activePipelineCount} applications are still active in the pipeline.</p>
+          </article>
         </div>
       </header>
 
@@ -252,35 +256,145 @@ function App() {
         </div>
       ) : null}
 
-      <section className="summary-grid">
+      <section className="summary-row">
         {dashboard.summary.map((card) => (
           <article key={card.label} className={`summary-card accent-${card.accent}`}>
-            <p>{card.label}</p>
+            <span className="summary-label">{card.label}</span>
             <strong>{card.value}</strong>
           </article>
         ))}
       </section>
 
-      <section className="main-grid">
-        <div className="left-column">
-          <section className="panel">
-            <div className="panel-header">
+      <section className="workspace">
+        <main className="workspace-main">
+          <section className="panel tracker-panel">
+            <div className="panel-header panel-header-wide">
               <div>
-                <p className="section-tag">Overview</p>
-                <h2>Pipeline health</h2>
+                <p className="section-tag">Live pipeline</p>
+                <h2>Application tracker</h2>
+                <p className="panel-copy">
+                  Review fit score, notes and current stage without leaving the board.
+                </p>
               </div>
-              <span className="muted">{isLoading ? 'Refreshing data...' : 'Live snapshot'}</span>
+              <div className="toolbar">
+                <input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search candidate, team or stack"
+                />
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <option value="ALL">All statuses</option>
+                  {statusOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {formatLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="pipeline-grid">
+
+            <div className="pipeline-strip">
               {dashboard.pipeline.map((item) => (
-                <div key={item.status} className="pipeline-stat">
+                <div key={item.status} className="pipeline-chip">
                   <span>{formatLabel(item.status)}</span>
                   <strong>{item.total}</strong>
                 </div>
               ))}
             </div>
+
+            <div className="application-list">
+              {filteredApplications.length > 0 ? (
+                filteredApplications.map((application) => (
+                  <article key={application.id} className="application-card">
+                    <div className="application-top">
+                      <div>
+                        <p className="application-name">{application.candidateName}</p>
+                        <p className="application-role">
+                          {application.jobTitle} - {application.team}
+                        </p>
+                      </div>
+                      <span className={`status-pill status-${application.status.toLowerCase()}`}>
+                        {formatLabel(application.status)}
+                      </span>
+                    </div>
+                    <div className="application-meta">
+                      <span>{application.candidateStack}</span>
+                      <span>Fit score {application.fitScore}</span>
+                      <span>Applied {formatDate(application.appliedAt)}</span>
+                    </div>
+                    <p className="application-notes">{application.stageNotes}</p>
+                    <div className="application-footer">
+                      <span className="muted">Updated {formatDateTime(application.updatedAt)}</span>
+                      <select
+                        value={application.status}
+                        onChange={(event) => handleStatusChange(application.id, event.target.value)}
+                      >
+                        {statusOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {formatLabel(option)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <strong>No applications match this filter.</strong>
+                  <p>Try clearing the search or choosing another status.</p>
+                </div>
+              )}
+            </div>
           </section>
 
+          <section className="resource-grid">
+            <section className="panel compact-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="section-tag">Candidates</p>
+                  <h2>Roster</h2>
+                </div>
+                <span className="muted">{candidates.length} total</span>
+              </div>
+              <div className="stack-list">
+                {candidates.map((candidate) => (
+                  <article key={candidate.id} className="mini-card">
+                    <strong>{candidate.fullName}</strong>
+                    <p>{candidate.primaryStack}</p>
+                    <span>
+                      {candidate.yearsOfExperience} yrs - {formatLabel(candidate.source)}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="panel compact-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="section-tag">Roles</p>
+                  <h2>Openings</h2>
+                </div>
+                <span className="muted">{openRoles} active</span>
+              </div>
+              <div className="stack-list">
+                {jobs.map((job) => (
+                  <article key={job.id} className="mini-card">
+                    <strong>{job.title}</strong>
+                    <p>
+                      {job.team} - {job.location}
+                    </p>
+                    <span>
+                      {formatLabel(job.employmentType)} - {job.active ? 'Open' : 'Closed'}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </section>
+        </main>
+
+        <aside className="workspace-side">
           <section className="panel form-panel">
             <div className="panel-header">
               <div>
@@ -603,114 +717,7 @@ function App() {
               </button>
             </form>
           </section>
-        </div>
-
-        <div className="right-column">
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <p className="section-tag">Control Room</p>
-                <h2>Application tracker</h2>
-              </div>
-              <div className="filters">
-                <input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search candidate, team or stack"
-                />
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                  <option value="ALL">All statuses</option>
-                  {statusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {formatLabel(option)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="application-list">
-              {filteredApplications.map((application) => (
-                <article key={application.id} className="application-card">
-                  <div className="application-top">
-                    <div>
-                      <p className="application-name">{application.candidateName}</p>
-                      <p className="muted">
-                        {application.jobTitle} - {application.team}
-                      </p>
-                    </div>
-                    <span className={`status-pill status-${application.status.toLowerCase()}`}>
-                      {formatLabel(application.status)}
-                    </span>
-                  </div>
-                  <div className="application-meta">
-                    <span>{application.candidateStack}</span>
-                    <span>Fit score: {application.fitScore}</span>
-                    <span>Applied: {formatDate(application.appliedAt)}</span>
-                  </div>
-                  <p className="application-notes">{application.stageNotes}</p>
-                  <div className="application-footer">
-                    <span className="muted">Updated {formatDateTime(application.updatedAt)}</span>
-                    <select
-                      value={application.status}
-                      onChange={(event) => handleStatusChange(application.id, event.target.value)}
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {formatLabel(option)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="double-panel">
-            <section className="panel compact-panel">
-              <div className="panel-header">
-                <div>
-                  <p className="section-tag">Talent</p>
-                  <h2>Candidate roster</h2>
-                </div>
-              </div>
-              <div className="stack-list">
-                {candidates.map((candidate) => (
-                  <article key={candidate.id} className="mini-card">
-                    <strong>{candidate.fullName}</strong>
-                    <p>{candidate.primaryStack}</p>
-                    <span>
-                      {candidate.yearsOfExperience} yrs - {formatLabel(candidate.source)}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section className="panel compact-panel">
-              <div className="panel-header">
-                <div>
-                  <p className="section-tag">Openings</p>
-                  <h2>Roles in focus</h2>
-                </div>
-              </div>
-              <div className="stack-list">
-                {jobs.map((job) => (
-                  <article key={job.id} className="mini-card">
-                    <strong>{job.title}</strong>
-                    <p>
-                      {job.team} - {job.location}
-                    </p>
-                    <span>
-                      {formatLabel(job.employmentType)} - {job.active ? 'Open' : 'Closed'}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </section>
-        </div>
+        </aside>
       </section>
     </div>
   )
